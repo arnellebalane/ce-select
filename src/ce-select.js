@@ -10,6 +10,7 @@ var ceselect = (function() {
         option: '<li class="ce-select-option" data-value="{{ value }}">'
             + '{{ label }}</li>'
     };
+    var keyCodes = { UP: 38, DOWN: 40 };
 
 
     initialize();
@@ -34,17 +35,20 @@ var ceselect = (function() {
      *  delegated into the document object.
      **/
     function attach() {
+        var focusedSelect = null;
         var blurTimeout = null;
 
         delegate('focus', '.ce-select-container', function(e) {
             clearTimeout(blurTimeout);
             this.classList.add('ce-select-container--focus');
+            focusedSelect = this;
         }, true);
 
         delegate('blur', '.ce-select-container', function(e) {
             blurTimeout = setTimeout(function() {
                 this.classList.remove('ce-select-container--focus');
-                this.classList.remove('ce-select-container--open');
+                close(this);
+                focusedSelect = null;
             }.bind(this), 125);
         }, true);
 
@@ -59,14 +63,17 @@ var ceselect = (function() {
             container.querySelector('.ce-select-original').focus();
             widget.dataset.value = this.dataset.value;
             widget.textContent = this.textContent;
-            container.classList.toggle('ce-select-container--open');
             synchronize(container);
+            close(container);
         });
 
         delegate('click', '.ce-select-widget', function(e) {
             var container = this.parentNode;
-            container.querySelector('.ce-select-original').focus();
-            container.classList.toggle('ce-select-container--open');
+            if (opened(container)) {
+                close(container);
+            } else {
+                open(container);
+            }
         });
     }
 
@@ -81,6 +88,7 @@ var ceselect = (function() {
     function construct(element) {
         var select = domify(templates.select, {});
         var dropdown = select.querySelector('.ce-select-dropdown');
+
         var options = element.querySelectorAll('option');
         options = Array.prototype.slice.apply(options);
         options.forEach(function(option) {
@@ -93,6 +101,51 @@ var ceselect = (function() {
         select.insertBefore(element, select.firstChild);
         element.classList.add('ce-select-original');
         synchronize(select, true);
+    }
+
+
+    /**
+     *  Abstracts the workflow of opening a custom select element.
+     *  @params:
+     *      {HTMLElement} element - the container of the custom select element
+     *          to be opened.
+     **/
+    function open(element) {
+        element.querySelector('.ce-select-original').focus();
+        element.classList.add('ce-select-container--open');
+
+        var value = element.querySelector('.ce-select-value').dataset.value;
+        var option = element.querySelector(
+            '.ce-select-option[data-value="' + value + '"]');
+        option.classList.add('ce-select-option--focus');
+    }
+
+
+    /**
+     *  Abstracts the workflow of closing a custom select element.
+     *  @params:
+     *      {HTMLElement} element - the container of the custom select element
+     *          to be closed.
+     **/
+    function close(element) {
+        element.classList.remove('ce-select-container--open');
+
+        var option = element.querySelector('.ce-select-option--focus');
+        if (option) {
+            option.classList.remove('ce-select-option--focus');
+        }
+    }
+
+
+    /**
+     *  Identifies whether the given custom select element is already opened or
+     *  still closed.
+     *  @params:
+     *      {HTMLElement} element - the container of the custom select element
+     *          to be checked whether open or close.
+     **/
+    function opened(element) {
+        return element.classList.contains('ce-select-container--open');
     }
 
 

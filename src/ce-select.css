@@ -76,7 +76,7 @@
 }
 
 .ce-select-option:hover,
-.ce-select-option.focus {
+.ce-select-option--focus {
     background-color: #bbb;
 }
 
@@ -86,6 +86,6 @@
 }
 
 .ce-select-option--disabled:hover,
-.ce-select-option--disabled.focus {
+.ce-select-option--disabled.ce-select-option--focus {
     background-color: transparent;
 }
