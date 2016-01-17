@@ -1,0 +1,91 @@
+.ce-select-original {
+    position: fixed;
+    top: 100vh;
+    left: 100vw;
+}
+
+
+.ce-select-container {
+    position: relative;
+    font-family: "Open Sans", sans-serif;
+    font-size: 14px;
+    line-height: 1;
+    color: #333;
+    cursor: pointer;
+    -webkit-user-select: none;
+}
+
+
+.ce-select-widget {
+    display: flex;
+    align-items: center;
+    width: 200px;
+    padding: 0.75em 1em;
+    background-color: #ddd;
+}
+
+.ce-select-container--focus .ce-select-widget {
+    outline: auto 3px #5e9ed7;
+    outline: auto 3px -webkit-focus-ring-color;
+}
+
+
+.ce-select-value {
+    margin-right: 1em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+
+.ce-select-toggle {
+    flex-shrink: 0;
+    width: 0.5em;
+    height: 0.5em;
+    border-right: 1px solid currentColor;
+    border-bottom: 1px solid currentColor;
+    margin-left: auto;
+    transform: translateY(-2px) rotate(45deg);
+}
+
+.ce-select-container--open .ce-select-toggle {
+    transform: translateY(2px) rotate(-135deg);
+}
+
+
+.ce-select-dropdown {
+    display: none;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    position: absolute;
+    top: calc(14px + 1.5em);
+    left: 0;
+    right: 0;
+    list-style: none;
+    background-color: #ccc;
+}
+
+.ce-select-container--open .ce-select-dropdown {
+    display: block;
+}
+
+
+.ce-select-option {
+    padding: 0.5em 1em;
+}
+
+.ce-select-option:hover,
+.ce-select-option.focus {
+    background-color: #bbb;
+}
+
+
+.ce-select-option--disabled {
+    color: #777;
+}
+
+.ce-select-option--disabled:hover,
+.ce-select-option--disabled.focus {
+    background-color: transparent;
+}
