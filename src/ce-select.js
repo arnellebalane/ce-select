@@ -16,6 +16,11 @@ var ceselect = (function() {
     attach();
 
 
+    /**
+     *  Find all native <select> elements that should be converted to custom
+     *  select elements and construct the proper markup for them. This ignores
+     *  <select> elements that are already converted into custom markup.
+     **/
     function initialize() {
         var selects = document.querySelectorAll(
             '.ce-select:not(.ce-select-original)');
@@ -24,6 +29,10 @@ var ceselect = (function() {
     }
 
 
+    /**
+     *  Enable event listeners for the custom select elements. All events are
+     *  delegated into the document object.
+     **/
     function attach() {
         var blurTimeout = null;
 
@@ -40,7 +49,7 @@ var ceselect = (function() {
         }, true);
 
         delegate('change', '.ce-select-original', function(e) {
-            syncValues(this.parentNode, true);
+            synchronize(this.parentNode, true);
         }, true);
 
         delegate('click', '.ce-select-option:not(.ce-select-option--disabled)',
@@ -51,7 +60,7 @@ var ceselect = (function() {
             widget.dataset.value = this.dataset.value;
             widget.textContent = this.textContent;
             container.classList.toggle('ce-select-container--open');
-            syncValues(container);
+            synchronize(container);
         });
 
         delegate('click', '.ce-select-widget', function(e) {
@@ -62,6 +71,13 @@ var ceselect = (function() {
     }
 
 
+    /**
+     *  Construct the custom select element markup from the given native
+     *  <select> element.
+     *  @params:
+     *      {HTMLSelectElement} element - the native <select> element to be
+     *          converted into a custom select element.
+     **/
     function construct(element) {
         var select = domify(templates.select, {});
         var dropdown = select.querySelector('.ce-select-dropdown');
@@ -76,7 +92,7 @@ var ceselect = (function() {
         element.parentNode.insertBefore(select, element);
         select.insertBefore(element, select.firstChild);
         element.classList.add('ce-select-original');
-        syncValues(select, true);
+        synchronize(select, true);
     }
 
 
@@ -90,7 +106,7 @@ var ceselect = (function() {
      *          of the original <select> element or based on the dummy select
      *          element.
      **/
-    function syncValues(element, followOriginal) {
+    function synchronize(element, followOriginal) {
         var original = element.querySelector('.ce-select-original');
         var widget = element.querySelector('.ce-select-value');
         if (followOriginal) {
