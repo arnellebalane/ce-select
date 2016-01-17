@@ -21,7 +21,7 @@
     align-items: center;
     width: 200px;
     padding: 0.75em 1em;
-    background-color: #ddd;
+    background-color: #c8c8c8;
 }
 
 .ce-select-container--focus .ce-select-widget {
@@ -63,7 +63,7 @@
     left: 0;
     right: 0;
     list-style: none;
-    background-color: #ccc;
+    background-color: #d8d8d8;
 }
 
 .ce-select-container--open .ce-select-dropdown {
@@ -77,7 +77,7 @@
 
 
 .ce-select-option--focus {
-    background-color: #bbb;
+    background-color: #c8c8c8;
 }
 
 
