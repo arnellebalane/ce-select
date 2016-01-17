@@ -10,7 +10,8 @@ var ceselect = (function() {
         option: '<li class="ce-select-option" data-value="{{ value }}">'
             + '{{ label }}</li>'
     };
-    var keyCodes = { UP: 38, DOWN: 40 };
+    var keyCodes = { UP: 38, DOWN: 40, RETURN: 13 };
+    var closeTimeout = null;
 
 
     initialize();
@@ -36,16 +37,15 @@ var ceselect = (function() {
      **/
     function attach() {
         var focusedSelect = null;
-        var blurTimeout = null;
 
         delegate('focus', '.ce-select-container', function(e) {
-            clearTimeout(blurTimeout);
+            clearTimeout(closeTimeout);
             this.classList.add('ce-select-container--focus');
             focusedSelect = this;
         }, true);
 
         delegate('blur', '.ce-select-container', function(e) {
-            blurTimeout = setTimeout(function() {
+            closeTimeout = setTimeout(function() {
                 this.classList.remove('ce-select-container--focus');
                 close(this);
                 focusedSelect = null;
@@ -58,7 +58,7 @@ var ceselect = (function() {
 
         delegate('click', '.ce-select-option:not(.ce-select-option--disabled)',
         function(e) {
-            var container = closest(this, '.ce-select-container');
+            var container = this.closest('.ce-select-container');
             var widget = container.querySelector('.ce-select-value');
             container.querySelector('.ce-select-original').focus();
             widget.dataset.value = this.dataset.value;
@@ -73,6 +73,23 @@ var ceselect = (function() {
                 close(container);
             } else {
                 open(container);
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (focusedSelect && values(keyCodes).indexOf(e.keyCode) > -1) {
+                e.preventDefault();
+                if (opened(focusedSelect)) {
+                    if (e.keyCode === keyCodes.RETURN) {
+                        selected(focusedSelect).click();
+                    } else if (e.keyCode === keyCodes.UP) {
+                        navigate(focusedSelect, -1);
+                    } else if (e.keyCode === keyCodes.DOWN) {
+                        navigate(focusedSelect, 1);
+                    }
+                } else {
+                    open(focusedSelect);
+                }
             }
         });
     }
@@ -105,7 +122,7 @@ var ceselect = (function() {
 
 
     /**
-     *  Abstracts the workflow of opening a custom select element.
+     *  Abstract the workflow of opening a custom select element.
      *  @params:
      *      {HTMLElement} element - the container of the custom select element
      *          to be opened.
@@ -122,7 +139,7 @@ var ceselect = (function() {
 
 
     /**
-     *  Abstracts the workflow of closing a custom select element.
+     *  Abstract the workflow of closing a custom select element.
      *  @params:
      *      {HTMLElement} element - the container of the custom select element
      *          to be closed.
@@ -130,7 +147,7 @@ var ceselect = (function() {
     function close(element) {
         element.classList.remove('ce-select-container--open');
 
-        var option = element.querySelector('.ce-select-option--focus');
+        var option = selected(element);
         if (option) {
             option.classList.remove('ce-select-option--focus');
         }
@@ -138,7 +155,7 @@ var ceselect = (function() {
 
 
     /**
-     *  Identifies whether the given custom select element is already opened or
+     *  Identify whether the given custom select element is already opened or
      *  still closed.
      *  @params:
      *      {HTMLElement} element - the container of the custom select element
@@ -146,6 +163,17 @@ var ceselect = (function() {
      **/
     function opened(element) {
         return element.classList.contains('ce-select-container--open');
+    }
+
+
+    /**
+     *  Get the currently selected option in the given custom select element.
+     *  @params:
+     *      {HTMLElement} element - the container of the custom select element
+     *          whose selected option is to be obtained.
+     **/
+    function selected(element) {
+        return element.querySelector('.ce-select-option--focus');
     }
 
 
@@ -173,6 +201,28 @@ var ceselect = (function() {
 
 
     /**
+     *  Navigates the currently focused option in the custom select element
+     *  based on the given direction. Used for keyboard navigation of the
+     *  custom select elements when selecting values.
+     *  @params:
+     *      {HTMLElement} element - the container of the custom select element
+     *          to be navigated.
+     *      {Integer} direction - the navigation direction, `-1` to go up and
+     *          `1` to go down.
+     **/
+    function navigate(element, direction) {
+        var option = selected(element);
+        var property = direction === -1
+            ? 'previousElementSibling' : 'nextElementSibling';
+        var sibling = option[property];
+        if (sibling) {
+            option.classList.remove('ce-select-option--focus');
+            sibling.classList.add('ce-select-option--focus');
+        }
+    }
+
+
+    /**
      *  Determine whether a given DOM element matches the given selector.
      *  @params:
      *      {HTMLElement} element - the DOM element to be tested.
@@ -183,25 +233,6 @@ var ceselect = (function() {
             || element.msMatchesSelector || element.mozMatchesSelector
             || element.webkitMatchesSelector || element.oMatchesSelector;
         return method.call(element, selector);
-    }
-
-
-    /**
-     *  Get the first element up the DOM tree starting at the given element
-     *  which matches the given selector.
-     *  @params:
-     *      {HTMLElement} element - the starting point DOM element for
-     *          searching the ancestor.
-     *      {String} selector - the ancestor element selector to search.
-     **/
-    function closest(element, selector) {
-        while (element !== document) {
-            if (matches(element, selector)) {
-                return element;
-            }
-            element = element.parentNode;
-        }
-        return null;
     }
 
 
@@ -220,7 +251,7 @@ var ceselect = (function() {
      **/
     function delegate(event, selector, callback, capture) {
         document.addEventListener(event, function(e) {
-            var element = closest(e.target, selector);
+            var element = e.target.closest(selector);
             if (element) {
                 callback.call(element, e);
             }
@@ -243,6 +274,19 @@ var ceselect = (function() {
         var div = document.createElement('div');
         div.innerHTML = template;
         return div.firstChild;
+    }
+
+
+    /**
+     *  Get the values of the given object, the same way `Object.keys()`
+     *  gets the keys.
+     *  @params:
+     *      {Object} object - the object whose values would be obtained.
+     **/
+    function values(object) {
+        return Object.keys(object).map(function(key) {
+            return object[key];
+        });
     }
 
 
