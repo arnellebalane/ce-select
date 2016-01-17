@@ -33,18 +33,19 @@ var ceselect = (function() {
 
     /**
      *  Enable event listeners for the custom select elements. All events are
-     *  delegated into the document object.
+     *  delegated into the document object. Use event capturing for events that
+     *  dont't bubble up.
      **/
     function attach() {
         var focusedSelect = null;
 
-        delegate('focus', '.ce-select-container', function(e) {
+        capture('focus', '.ce-select-container', function(e) {
             clearTimeout(closeTimeout);
             this.classList.add('ce-select-container--focus');
             focusedSelect = this;
         }, true);
 
-        delegate('blur', '.ce-select-container', function(e) {
+        capture('blur', '.ce-select-container', function(e) {
             closeTimeout = setTimeout(function() {
                 this.classList.remove('ce-select-container--focus');
                 close(this);
@@ -52,11 +53,11 @@ var ceselect = (function() {
             }.bind(this), 125);
         }, true);
 
-        delegate('change', '.ce-select-original', function(e) {
+        capture('change', '.ce-select-original', function(e) {
             synchronize(this.parentNode, true);
         }, true);
 
-        delegate('click', '.ce-select-option:not(.ce-select-option--disabled)',
+        capture('click', '.ce-select-option:not(.ce-select-option--disabled)',
         function(e) {
             var container = this.closest('.ce-select-container');
             var widget = container.querySelector('.ce-select-value');
@@ -67,7 +68,7 @@ var ceselect = (function() {
             close(container);
         });
 
-        delegate('click', '.ce-select-widget', function(e) {
+        capture('click', '.ce-select-widget', function(e) {
             var container = this.parentNode;
             if (opened(container)) {
                 close(container);
@@ -75,6 +76,19 @@ var ceselect = (function() {
                 open(container);
             }
         });
+
+        capture('mouseenter', '.ce-select-option', function(e) {
+            var container = this.closest('.ce-select-container');
+            var option = selected(container);
+            if (option) {
+                option.classList.remove('ce-select-option--focus');
+            }
+            this.classList.add('ce-select-option--focus');
+        }, true);
+
+        capture('mouseleave', '.ce-select-option', function(e) {
+            this.classList.remove('ce-select-option--focus');
+        }, true);
 
         document.addEventListener('keydown', function(e) {
             if (focusedSelect && values(keyCodes).indexOf(e.keyCode) > -1) {
@@ -247,15 +261,17 @@ var ceselect = (function() {
      *          to be delegated.
      *      {Function} callback - the callback function to execute when the
      *          event occurs.
-     *      {Boolean} capture - whether to use event capturing or not.
+     *      {Boolean} _capture - whether to use event capturing or not.
      **/
-    function delegate(event, selector, callback, capture) {
+    function capture(event, selector, callback, _capture) {
         document.addEventListener(event, function(e) {
-            var element = e.target.closest(selector);
-            if (element) {
-                callback.call(element, e);
+            if (e.target.closest) {
+                var element = e.target.closest(selector);
+                if (element) {
+                    callback.call(element, e);
+                }
             }
-        }, capture === true);
+        }, _capture === true);
     }
 
 
