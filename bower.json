@@ -1,0 +1,26 @@
+{
+  "name": "ce-select",
+  "main": "ce-select.js",
+  "homepage": "https://github.com/arnellebalane/ce-select",
+  "authors": [
+    "Arnelle Balane <arnellebalane@gmail.com>"
+  ],
+  "description": "customizeable element - select",
+  "moduleType": [
+    "amd",
+    "globals"
+  ],
+  "keywords": [
+    "customizeable",
+    "elements",
+    "select"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
