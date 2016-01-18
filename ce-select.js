@@ -1,4 +1,10 @@
-var ceselect = (function() {
+(function(root, declaration) {
+    if (typeof define === 'function' && define.amd) {
+        define([], declaration);
+    } else {
+        root.ceselect = declaration();
+    }
+})(window, function() {
     var templates = {
         select: '<div class="ce-select-container">'
                 + '<div class="ce-select-widget">'
@@ -310,4 +316,4 @@ var ceselect = (function() {
 
 
     return { refresh: initialize };
-})();
+});
