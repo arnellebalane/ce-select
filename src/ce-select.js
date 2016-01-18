@@ -125,6 +125,9 @@ var ceselect = (function() {
         options.forEach(function(option) {
             var values = { value: option.value, label: option.textContent };
             var rendered = domify(templates.option, values);
+            if (option.disabled) {
+                rendered.classList.add('ce-select-option--disabled');
+            }
             dropdown.appendChild(rendered);
         });
 
